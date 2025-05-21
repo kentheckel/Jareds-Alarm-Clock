@@ -2,8 +2,8 @@ import RPi.GPIO as GPIO
 import time
 
 # Corrected pin setup (adjust if needed)
-CLK = 23      # Rotary encoder pin A
-DT = 22       # Rotary encoder pin B
+CLK = 22      # Rotary encoder pin A
+DT = 23       # Rotary encoder pin B
 BUTTON = 27   # Encoder push button
 
 GPIO.setmode(GPIO.BCM)
@@ -27,7 +27,7 @@ try:
         current_time = time.time()
 
         # Detect rotation
-        if current_clk != last_clk and current_time - last_turn_time > debounce_time:
+        if current_clk == GPIO.LOW and current_time - last_turn_time > 0.1:
             last_turn_time = current_time
             if current_dt != current_clk:
                 print("Rotated clockwise")
