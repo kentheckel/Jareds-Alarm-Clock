@@ -19,6 +19,7 @@ class DisplayManager:
         self.line_height = 25
 
     def update_clock(self, hour_format="24", alarms=[]):
+        self.epd.init()
         image = Image.new('1', (self.epd.width, self.epd.height), 255)
         draw = ImageDraw.Draw(image)
 
@@ -46,7 +47,7 @@ class DisplayManager:
         self.epd.display(self.epd.getbuffer(image))
 
     def draw_static_menu(self):
-        # Draw menu text once
+        self.epd.init_fast()  # Enable partial refresh mode
         image = Image.new('1', (self.epd.width, self.epd.height), 255)
         draw = ImageDraw.Draw(image)
 
@@ -55,8 +56,6 @@ class DisplayManager:
             draw.text((10, y), item, font=self.menu_font, fill=0)
 
         self.epd.display(self.epd.getbuffer(image))
-
-        # Draw first arrow
         self.draw_arrow(self.selected_index)
 
     def draw_arrow(self, index):
@@ -64,14 +63,14 @@ class DisplayManager:
         draw = ImageDraw.Draw(image)
         y = self.menu_y_start + index * self.line_height
         draw.text((self.arrow_x, y), ">", font=self.menu_font, fill=0)
-        self.epd.displayPartial(self.epd.getbuffer(image))
+        self.epd.display_Partial(self.epd.getbuffer(image))
 
     def clear_arrow(self, index):
         image = Image.new('1', (self.epd.width, self.epd.height), 255)
         draw = ImageDraw.Draw(image)
         y = self.menu_y_start + index * self.line_height
         draw.rectangle((self.arrow_x, y, self.arrow_x + 10, y + self.line_height), fill=255)
-        self.epd.displayPartial(self.epd.getbuffer(image))
+        self.epd.display_Partial(self.epd.getbuffer(image))
 
     def update_menu_selection(self, direction):
         prev_index = self.selected_index
