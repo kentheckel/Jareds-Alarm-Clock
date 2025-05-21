@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 import time
 
-BUTTON_PIN = 17  # adjust as needed
+BUTTON_PIN = 27  # adjust as needed
 
 class DialInput:
     def __init__(self):
