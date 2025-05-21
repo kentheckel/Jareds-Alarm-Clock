@@ -53,7 +53,6 @@ class DisplayManager:
         if not self.in_menu_mode:
             self.epd.init()
             self.epd.Clear()
-            self.epd.init_fast()
             self.in_menu_mode = True
 
         image = Image.new('1', (self.epd.width, self.epd.height), 255)
@@ -65,6 +64,7 @@ class DisplayManager:
 
         self.epd.display(self.epd.getbuffer(image))
         self.draw_arrow(self.selected_index)
+
 
 
     def draw_arrow(self, index):
