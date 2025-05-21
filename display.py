@@ -18,6 +18,9 @@ class DisplayManager:
         self.menu_y_start = 10
         self.line_height = 25
 
+        self.in_menu_mode = False  # <-- ADD THIS LINE
+
+
     def update_clock(self, hour_format="24", alarms=[]):
         self.epd.init()
         image = Image.new('1', (self.epd.width, self.epd.height), 255)
