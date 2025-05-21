@@ -26,9 +26,9 @@ class DialInput:
         # Detect falling edge on CLK for rotation
         if self.last_clk == GPIO.HIGH and current_clk == GPIO.LOW:
             if current_dt == GPIO.HIGH:
-                result = "up"
-            else:
                 result = "down"
+            else:
+                result = "up"
 
         # Detect button press
         if current_button == GPIO.LOW and self.last_button == GPIO.HIGH:
