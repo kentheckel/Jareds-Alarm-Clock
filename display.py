@@ -14,6 +14,9 @@ class DisplayManager:
         self.font_medium = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 36)
         self.font_small = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 24)
 
+        # Prepare for clock font customization
+        self.clock_font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 110)  # Large for clock face
+
         # Mode management
         self.modes = ["clock", "alarm", "sounds", "wifi", "brightness", "hours", "fonts"]
         self.current_mode_index = 0
@@ -32,8 +35,9 @@ class DisplayManager:
         image = Image.new('1', (self.epd.width, self.epd.height), 255)
         draw = ImageDraw.Draw(image)
 
-        # Draw mode indicator in top left
-        draw.text((10, 10), self.current_mode, font=self.font_small, fill=0)
+        # Only draw mode indicator if not in clock mode
+        if self.current_mode != "clock":
+            draw.text((10, 10), self.current_mode, font=self.font_small, fill=0)
 
         if self.current_mode == "clock":
             self._draw_clock(draw, hour_format, alarms)
@@ -53,28 +57,28 @@ class DisplayManager:
         self.epd.display(self.epd.getbuffer(image))
 
     def _draw_clock(self, draw, hour_format, alarms):
-        """Draw the main clock display"""
+        """Draw the main clock display with large time and alarms to the left"""
         now = datetime.now()
         if hour_format == "12":
             time_text = now.strftime("%I:%M %p").lower()
         else:
             time_text = now.strftime("%H:%M")
 
-        # Center the time
-        w, h = draw.textsize(time_text, font=self.font_large)
+        # Get size of the clock text using the customizable clock font
+        w, h = draw.textsize(time_text, font=self.clock_font)
         x = (self.epd.width - w) // 2
-        y = 60
-        draw.text((x, y), time_text, font=self.font_large, fill=0)
+        y = (self.epd.height - h) // 2
+        draw.text((x, y), time_text, font=self.clock_font, fill=0)
 
-        # Draw alarms if any
-        if len(alarms) >= 1:
-            draw.text((10, 120), alarms[0], font=self.font_small, fill=0)
-        if len(alarms) >= 2:
-            w2, _ = draw.textsize(alarms[1], font=self.font_small)
-            draw.text(((self.epd.width - w2)//2, 120), alarms[1], font=self.font_small, fill=0)
-        if len(alarms) >= 3:
-            w3, _ = draw.textsize(alarms[2], font=self.font_small)
-            draw.text((self.epd.width - w3 - 10, 120), alarms[2], font=self.font_small, fill=0)
+        # Draw up to 3 alarms, vertically aligned to the left of the clock digits
+        alarm_x = x - 10  # 10px padding to the left of the clock
+        alarm_y_start = y
+        alarm_spacing = self.font_small.getsize("0")[1] + 5  # vertical space between alarms
+        for i in range(min(3, len(alarms))):
+            alarm_y = alarm_y_start + i * alarm_spacing
+            # Only draw if it doesn't extend past the clock text
+            if alarm_y + self.font_small.getsize("0")[1] <= y + h:
+                draw.text((alarm_x - self.font_small.getsize(alarms[i])[0], alarm_y), alarms[i], font=self.font_small, fill=0)
 
     def _draw_alarm_menu(self, draw, alarms):
         """Draw the alarm configuration screen"""
