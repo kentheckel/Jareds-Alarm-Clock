@@ -28,9 +28,20 @@ try:
         if action:
             print("Action:", action)
 
-        if action == "press":
-            display.cycle_mode()
-            display.update_display(hour_format=config["hour_format"], alarms=alarms.get_alarms())
+        if display.current_mode == "fonts":
+            if action == "up":
+                display.font_menu_up()
+                display.update_display(hour_format=config["hour_format"], alarms=alarms.get_alarms())
+            elif action == "down":
+                display.font_menu_down()
+                display.update_display(hour_format=config["hour_format"], alarms=alarms.get_alarms())
+            elif action == "press":
+                display.font_menu_select()
+                display.update_display(hour_format=config["hour_format"], alarms=alarms.get_alarms())
+        else:
+            if action == "press":
+                display.cycle_mode()
+                display.update_display(hour_format=config["hour_format"], alarms=alarms.get_alarms())
 
         time.sleep(0.05)  # fast poll = smooth menu
 

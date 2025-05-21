@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
 from waveshare_epd import epd4in2_V2
@@ -15,7 +16,18 @@ class DisplayManager:
         self.font_small = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 24)
 
         # Prepare for clock font customization
-        self.clock_font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 110)  # Large for clock face
+        self.clock_font_path = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
+        self.clock_font = ImageFont.truetype(self.clock_font_path, 110)  # Large for clock face
+
+        # Load all font files from Fonts directory
+        self.fonts_dir = os.path.join(os.path.dirname(__file__), 'Fonts')
+        self.font_files = [f for f in os.listdir(self.fonts_dir) if f.lower().endswith(('.ttf', '.otf'))]
+        self.font_files.sort()
+        self.font_preview_size = 60
+        self.selected_font_index = 0
+        self.font_scroll_offset = 0  # For scrolling the preview list
+        self.font_preview_count = 4  # Number of fonts to show at once
+        self.font_preview_spacing = 80
 
         # Mode management
         self.modes = ["clock", "alarm", "sounds", "wifi", "brightness", "hours", "fonts"]
@@ -113,6 +125,54 @@ class DisplayManager:
         draw.text((10, 100), current_format, font=self.font_medium, fill=0)
 
     def _draw_fonts_menu(self, draw):
-        """Draw the fonts configuration screen"""
-        draw.text((10, 60), "font options:", font=self.font_medium, fill=0)
-        draw.text((10, 100), "coming soon...", font=self.font_small, fill=0)
+        """Draw the fonts configuration screen with previews and selection"""
+        now = datetime.now()
+        time_text = now.strftime("%H:%M")
+        # Calculate vertical start for centering previews
+        total_height = self.font_preview_count * self.font_preview_spacing
+        y_start = (self.epd.height - total_height) // 2
+        x_left = 30
+        for i in range(self.font_preview_count):
+            font_idx = self.font_scroll_offset + i
+            if font_idx >= len(self.font_files):
+                break
+            font_file = self.font_files[font_idx]
+            font_path = os.path.join(self.fonts_dir, font_file)
+            try:
+                preview_font = ImageFont.truetype(font_path, self.font_preview_size)
+            except Exception:
+                preview_font = self.font_medium  # fallback if font fails to load
+            y = y_start + i * self.font_preview_spacing
+            # Highlight selected font
+            if font_idx == self.selected_font_index:
+                # Draw a rectangle or underline to highlight
+                draw.rectangle((x_left-10, y-5, self.epd.width-30, y+self.font_preview_size+10), outline=0, width=2)
+            # Draw the time in the preview font
+            draw.text((x_left, y), time_text, font=preview_font, fill=0)
+            # Draw the font file name (small, below preview)
+            draw.text((x_left, y+self.font_preview_size+5), font_file, font=self.font_small, fill=0)
+
+    # Add methods to handle font menu navigation and selection
+    def font_menu_up(self):
+        if self.selected_font_index > 0:
+            self.selected_font_index -= 1
+            if self.selected_font_index < self.font_scroll_offset:
+                self.font_scroll_offset -= 1
+
+    def font_menu_down(self):
+        if self.selected_font_index < len(self.font_files) - 1:
+            self.selected_font_index += 1
+            if self.selected_font_index >= self.font_scroll_offset + self.font_preview_count:
+                self.font_scroll_offset += 1
+
+    def font_menu_select(self):
+        # Set the selected font as the main clock font
+        font_file = self.font_files[self.selected_font_index]
+        font_path = os.path.join(self.fonts_dir, font_file)
+        try:
+            self.clock_font_path = font_path
+            self.clock_font = ImageFont.truetype(font_path, 110)
+        except Exception:
+            pass  # fallback to previous font if loading fails
+
+    # ... rest of your menu drawing methods remain unchanged ...
