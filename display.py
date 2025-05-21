@@ -60,30 +60,17 @@ class DisplayManager:
         image = Image.new('1', (self.epd.width, self.epd.height), 255)
         draw = ImageDraw.Draw(image)
 
-        # Draw all menu items
+        # Draw all menu items and arrow in one pass
         for i, item in enumerate(self.menu_items):
             y = self.menu_y_start + i * self.line_height
+            # Draw menu item
             draw.text((10, y), item, font=self.menu_font, fill=0)
+            # Draw arrow if this is the selected item
+            if i == self.selected_index:
+                draw.text((self.arrow_x, y), "<", font=self.menu_font, fill=0)
 
-        # Display the entire menu at once to prevent fading
+        # Display everything at once to prevent fading
         self.epd.display(self.epd.getbuffer(image))
-        self.draw_arrow(self.selected_index)
-
-    def draw_arrow(self, index):
-        # Create new image for arrow
-        image = Image.new('1', (self.epd.width, self.epd.height), 255)
-        draw = ImageDraw.Draw(image)
-        y = self.menu_y_start + index * self.line_height
-        # Changed arrow direction to <
-        draw.text((self.arrow_x, y), "<", font=self.menu_font, fill=0)
-        self.epd.display_Partial(self.epd.getbuffer(image))
-
-    def clear_arrow(self, index):
-        image = Image.new('1', (self.epd.width, self.epd.height), 255)
-        draw = ImageDraw.Draw(image)
-        y = self.menu_y_start + index * self.line_height
-        draw.rectangle((self.arrow_x, y, self.arrow_x + 10, y + self.line_height), fill=255)
-        self.epd.display_Partial(self.epd.getbuffer(image))
 
     def update_menu_selection(self, direction):
         prev_index = self.selected_index
@@ -94,8 +81,8 @@ class DisplayManager:
             self.selected_index = (self.selected_index - 1) % len(self.menu_items)
 
         if self.selected_index != prev_index:
-            self.clear_arrow(prev_index)
-            self.draw_arrow(self.selected_index)
+            # Redraw the entire menu with new selection
+            self.draw_static_menu()
 
     def get_selected_menu_item(self):
         return self.menu_items[self.selected_index]
