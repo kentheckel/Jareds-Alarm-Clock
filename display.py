@@ -1,6 +1,5 @@
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
-import epd_driver  # Replace with your actual ePaper driver import
 from waveshare_epd import epd4in2_V2
 
 
