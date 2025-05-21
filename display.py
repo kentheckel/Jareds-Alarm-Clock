@@ -2,7 +2,6 @@ from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
 from waveshare_epd import epd4in2_V2
 
-
 class DisplayManager:
     def __init__(self):
         self.epd = epd4in2_V2.EPD()
@@ -15,6 +14,9 @@ class DisplayManager:
 
         self.menu_items = ["Alarm", "Sounds", "Wifi", "Brightness", "Hours", "Font"]
         self.selected_index = 0
+        self.arrow_x = self.epd.width - 20
+        self.menu_y_start = 10
+        self.line_height = 25
 
     def update_clock(self, hour_format="24", alarms=[]):
         image = Image.new('1', (self.epd.width, self.epd.height), 255)
@@ -43,24 +45,44 @@ class DisplayManager:
 
         self.epd.display(self.epd.getbuffer(image))
 
-    def draw_menu(self):
+    def draw_static_menu(self):
+        # Draw menu text once
         image = Image.new('1', (self.epd.width, self.epd.height), 255)
         draw = ImageDraw.Draw(image)
 
         for i, item in enumerate(self.menu_items):
-            prefix = "→ " if i == self.selected_index else "  "
-            draw.text((10, 10 + i * 25), prefix + item, font=self.menu_font, fill=0)
+            y = self.menu_y_start + i * self.line_height
+            draw.text((10, y), item, font=self.menu_font, fill=0)
 
         self.epd.display(self.epd.getbuffer(image))
 
+        # Draw first arrow
+        self.draw_arrow(self.selected_index)
+
+    def draw_arrow(self, index):
+        image = Image.new('1', (self.epd.width, self.epd.height), 255)
+        draw = ImageDraw.Draw(image)
+        y = self.menu_y_start + index * self.line_height
+        draw.text((self.arrow_x, y), ">", font=self.menu_font, fill=0)
+        self.epd.displayPartial(self.epd.getbuffer(image))
+
+    def clear_arrow(self, index):
+        image = Image.new('1', (self.epd.width, self.epd.height), 255)
+        draw = ImageDraw.Draw(image)
+        y = self.menu_y_start + index * self.line_height
+        draw.rectangle((self.arrow_x, y, self.arrow_x + 10, y + self.line_height), fill=255)
+        self.epd.displayPartial(self.epd.getbuffer(image))
+
     def update_menu_selection(self, direction):
+        prev_index = self.selected_index
         if direction == "up":
             self.selected_index = (self.selected_index - 1) % len(self.menu_items)
         elif direction == "down":
             self.selected_index = (self.selected_index + 1) % len(self.menu_items)
 
-        self.draw_menu()  # force redraw of entire menu (yes, needed on ePaper)
-
+        if self.selected_index != prev_index:
+            self.clear_arrow(prev_index)
+            self.draw_arrow(self.selected_index)
 
     def get_selected_menu_item(self):
         return self.menu_items[self.selected_index]
