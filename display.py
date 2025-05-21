@@ -54,12 +54,12 @@ class DisplayManager:
         self.epd.display(self.epd.getbuffer(image))
 
     def update_menu_selection(self, direction):
-    if direction == "up":
-        self.selected_index = (self.selected_index - 1) % len(self.menu_items)
-    elif direction == "down":
-        self.selected_index = (self.selected_index + 1) % len(self.menu_items)
+        if direction == "up":
+            self.selected_index = (self.selected_index - 1) % len(self.menu_items)
+        elif direction == "down":
+            self.selected_index = (self.selected_index + 1) % len(self.menu_items)
 
-    self.draw_menu()  # force redraw of entire menu (yes, needed on ePaper)
+        self.draw_menu()  # force redraw of entire menu (yes, needed on ePaper)
 
 
     def get_selected_menu_item(self):
