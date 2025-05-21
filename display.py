@@ -47,16 +47,23 @@ class DisplayManager:
         self.epd.display(self.epd.getbuffer(image))
 
     def draw_static_menu(self):
-        self.epd.init_fast()  # Enable partial refresh mode
-        image = Image.new('1', (self.epd.width, self.epd.height), 255)
-        draw = ImageDraw.Draw(image)
+    if not self.in_menu_mode:
+        self.epd.init()
+        self.epd.Clear()
+        self.epd.init_fast()
+        self.in_menu_mode = False
 
-        for i, item in enumerate(self.menu_items):
-            y = self.menu_y_start + i * self.line_height
-            draw.text((10, y), item, font=self.menu_font, fill=0)
 
-        self.epd.display(self.epd.getbuffer(image))
-        self.draw_arrow(self.selected_index)
+    image = Image.new('1', (self.epd.width, self.epd.height), 255)
+    draw = ImageDraw.Draw(image)
+
+    for i, item in enumerate(self.menu_items):
+        y = self.menu_y_start + i * self.line_height
+        draw.text((10, y), item, font=self.menu_font, fill=0)
+
+    self.epd.display(self.epd.getbuffer(image))
+    self.draw_arrow(self.selected_index)
+
 
     def draw_arrow(self, index):
         image = Image.new('1', (self.epd.width, self.epd.height), 255)
