@@ -57,28 +57,29 @@ class DisplayManager:
         self.epd.display(self.epd.getbuffer(image))
 
     def _draw_clock(self, draw, hour_format, alarms):
-        """Draw the main clock display with large time and alarms to the left"""
+        """Draw the main clock display with large time and alarm dots underneath, left-aligned with the clock digits"""
         now = datetime.now()
         if hour_format == "12":
             time_text = now.strftime("%I:%M %p").lower()
         else:
             time_text = now.strftime("%H:%M")
 
-        # Get size of the clock text using the customizable clock font
+        # Get size and position of the clock text using the customizable clock font
         w, h = draw.textsize(time_text, font=self.clock_font)
         x = (self.epd.width - w) // 2
         y = (self.epd.height - h) // 2
         draw.text((x, y), time_text, font=self.clock_font, fill=0)
 
-        # Draw up to 3 alarms, vertically aligned to the left of the clock digits
-        alarm_x = x - 10  # 10px padding to the left of the clock
-        alarm_y_start = y
-        alarm_spacing = self.font_small.getsize("0")[1] + 5  # vertical space between alarms
-        for i in range(min(3, len(alarms))):
-            alarm_y = alarm_y_start + i * alarm_spacing
-            # Only draw if it doesn't extend past the clock text
-            if alarm_y + self.font_small.getsize("0")[1] <= y + h:
-                draw.text((alarm_x - self.font_small.getsize(alarms[i])[0], alarm_y), alarms[i], font=self.font_small, fill=0)
+        # Draw 1-3 dots in the bottom left, left-aligned with the clock digits
+        num_dots = min(3, len(alarms))
+        if num_dots > 0:
+            dot_radius = 4
+            dot_spacing = 10
+            dot_y = y + h + 18  # 18px below the clock digits
+            dot_x_start = x
+            for i in range(num_dots):
+                dot_x = dot_x_start + i * (dot_radius * 2 + dot_spacing)
+                draw.ellipse((dot_x, dot_y, dot_x + dot_radius * 2, dot_y + dot_radius * 2), fill=0)
 
     def _draw_alarm_menu(self, draw, alarms):
         """Draw the alarm configuration screen"""
