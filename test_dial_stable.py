@@ -28,9 +28,10 @@ try:
         # Detect falling edge on CLK
         if last_clk == GPIO.HIGH and current_clk == GPIO.LOW:
             if current_dt == GPIO.HIGH:
-                print("Rotated clockwise")
-            else:
                 print("Rotated counterclockwise")
+            else:
+                print("Rotated clockwise")
+
             last_turn_time = current_time
 
         last_clk = current_clk
