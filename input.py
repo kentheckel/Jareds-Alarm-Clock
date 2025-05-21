@@ -6,6 +6,7 @@ BUTTON_PIN = 27  # adjust as needed
 class DialInput:
     def __init__(self):
         GPIO.setmode(GPIO.BCM)
+        GPIO.setwarnings(False)
         GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
     def check_input(self):
