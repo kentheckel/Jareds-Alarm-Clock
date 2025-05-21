@@ -1,24 +1,34 @@
 from display import DisplayManager
 from input import DialInput
 from alarm import AlarmManager
+from config import load_config
+
+import time
 
 display = DisplayManager()
 dial = DialInput()
 alarms = AlarmManager()
+config = load_config()
 
-def main():
+menu_mode = False
+
+try:
     while True:
-        now = alarms.get_current_time()
-        current_alarms = alarms.get_active_alarms()
+        if not menu_mode:
+            display.draw_clock(hour_format=config["hour_format"], alarms=alarms.get_alarms())
+        time.sleep(0.5)
 
-        display.update_time(now)
-        display.update_alarms(current_alarms)
+        action = dial.get_input()
 
-        action = dial.check_input()
-        if action == "MENU":
-            display.show_menu()
-            selected = dial.navigate_menu(["Alarms", "Sounds", "WiFi", "Brightness"])
-            display.handle_menu_selection(selected, dial, alarms)
+        if action == "press":
+            menu_mode = not menu_mode
+            if menu_mode:
+                display.draw_menu()
+            else:
+                display.draw_clock(hour_format=config["hour_format"], alarms=alarms.get_alarms())
 
-if __name__ == "__main__":
-    main()
+        elif action in ["up", "down"] and menu_mode:
+            display.update_menu_selection(action)
+
+except KeyboardInterrupt:
+    print("Exiting.")

@@ -1,2 +1,4 @@
-WIFI_ENABLED = True
-BRIGHTNESS = 0.8
+def load_config():
+    return {
+        "hour_format": "24",  # or "12"
+    }

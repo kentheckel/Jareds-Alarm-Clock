@@ -1,20 +1,40 @@
 import RPi.GPIO as GPIO
 import time
 
-BUTTON_PIN = 27  # adjust as needed
+CLK = 23
+DT = 22
+BUTTON = 27
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+
+GPIO.setup(CLK, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(DT, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 class DialInput:
     def __init__(self):
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setwarnings(False)
-        GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        self.last_clk = GPIO.input(CLK)
+        self.last_button = GPIO.input(BUTTON)
 
-    def check_input(self):
-        if GPIO.input(BUTTON_PIN) == GPIO.LOW:
-            time.sleep(0.3)
-            return "MENU"
-        return None
+    def get_input(self):
+        result = None
+        current_clk = GPIO.input(CLK)
+        current_dt = GPIO.input(DT)
+        current_button = GPIO.input(BUTTON)
 
-    def navigate_menu(self, items):
-        # placeholder: simulate selecting first item
-        return items[0]
+        # Detect falling edge on CLK for rotation
+        if self.last_clk == GPIO.HIGH and current_clk == GPIO.LOW:
+            if current_dt == GPIO.HIGH:
+                result = "up"
+            else:
+                result = "down"
+
+        # Detect button press
+        if current_button == GPIO.LOW and self.last_button == GPIO.HIGH:
+            result = "press"
+            time.sleep(0.2)  # debounce
+
+        self.last_clk = current_clk
+        self.last_button = current_button
+        return result
