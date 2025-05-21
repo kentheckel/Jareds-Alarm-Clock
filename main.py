@@ -15,7 +15,8 @@ menu_mode = False
 try:
     while True:
         if not menu_mode:
-            display.draw_clock(hour_format=config["hour_format"], alarms=alarms.get_alarms())
+            display.update_clock(hour_format=config["hour_format"], alarms=alarms.get_alarms())
+
         time.sleep(0.5)
 
         action = dial.get_input()
@@ -25,7 +26,8 @@ try:
             if menu_mode:
                 display.draw_menu()
             else:
-                display.draw_clock(hour_format=config["hour_format"], alarms=alarms.get_alarms())
+                display.update_clock(hour_format=config["hour_format"], alarms=alarms.get_alarms())
+
 
         elif action in ["up", "down"] and menu_mode:
             display.update_menu_selection(action)
