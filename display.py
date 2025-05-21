@@ -23,11 +23,12 @@ class DisplayManager:
         self.fonts_dir = os.path.join(os.path.dirname(__file__), 'Fonts')
         self.font_files = [f for f in os.listdir(self.fonts_dir) if f.lower().endswith(('.ttf', '.otf'))]
         self.font_files.sort()
-        self.font_preview_size = 60
+        self.font_preview_size = 38  # Smaller preview size
         self.selected_font_index = 0
         self.font_scroll_offset = 0  # For scrolling the preview list
         self.font_preview_count = 4  # Number of fonts to show at once
-        self.font_preview_spacing = 80
+        self.font_preview_spacing = 50  # Tighter vertical spacing
+        self.font_preview_x = 90  # Shift right to avoid 'fonts' label
 
         # Mode management
         self.modes = ["clock", "alarm", "sounds", "wifi", "brightness", "hours", "fonts"]
@@ -125,13 +126,12 @@ class DisplayManager:
         draw.text((10, 100), current_format, font=self.font_medium, fill=0)
 
     def _draw_fonts_menu(self, draw):
-        """Draw the fonts configuration screen with previews and selection"""
+        """Draw the fonts configuration screen with previews and selection (minimalist, no font names)"""
         now = datetime.now()
         time_text = now.strftime("%H:%M")
         # Calculate vertical start for centering previews
         total_height = self.font_preview_count * self.font_preview_spacing
         y_start = (self.epd.height - total_height) // 2
-        x_left = 30
         for i in range(self.font_preview_count):
             font_idx = self.font_scroll_offset + i
             if font_idx >= len(self.font_files):
@@ -145,12 +145,10 @@ class DisplayManager:
             y = y_start + i * self.font_preview_spacing
             # Highlight selected font
             if font_idx == self.selected_font_index:
-                # Draw a rectangle or underline to highlight
-                draw.rectangle((x_left-10, y-5, self.epd.width-30, y+self.font_preview_size+10), outline=0, width=2)
+                draw.rectangle((self.font_preview_x-10, y-5, self.epd.width-30, y+self.font_preview_size+10), outline=0, width=2)
             # Draw the time in the preview font
-            draw.text((x_left, y), time_text, font=preview_font, fill=0)
-            # Draw the font file name (small, below preview)
-            draw.text((x_left, y+self.font_preview_size+5), font_file, font=self.font_small, fill=0)
+            draw.text((self.font_preview_x, y), time_text, font=preview_font, fill=0)
+        # No font file names drawn
 
     # Add methods to handle font menu navigation and selection
     def font_menu_up(self):
@@ -174,5 +172,8 @@ class DisplayManager:
             self.clock_font = ImageFont.truetype(font_path, 110)
         except Exception:
             pass  # fallback to previous font if loading fails
+        # After selection, switch back to clock mode
+        self.current_mode_index = 0
+        self.current_mode = self.modes[self.current_mode_index]
 
     # ... rest of your menu drawing methods remain unchanged ...
