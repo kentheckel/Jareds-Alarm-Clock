@@ -2,8 +2,8 @@ import RPi.GPIO as GPIO
 import time
 
 # BCM pin numbers
-CLK = 22      # Rotary encoder pin A
-DT = 23       # Rotary encoder pin B
+CLK = 23      # Rotary encoder pin A
+DT = 22       # Rotary encoder pin B
 BUTTON = 27   # Encoder push button
 
 # Setup
